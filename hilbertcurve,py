@@ -1,0 +1,211 @@
+import numpy as np
+from matplotlib import pyplot as plt
+bits = 4
+mat = np.zeros((2**bits,2**bits))
+
+text = "The sun is shining brightly in the clear blue sky."
+# https://www.compuphase.com/hilbert.htm
+plt.imshow(mat)
+plt.show()
+
+def in_bounds(pos,mat):
+    return pos[0] >= 0 and pos[1]>=0 and pos[0]<mat.shape[0] and pos[1]<mat.shape[0]
+
+def right(mat,pos,text):
+     if len(text) == 0:
+         return "",[pos[0]+1,pos[1]]
+     if not in_bounds(pos,mat):
+         return text,pos
+
+     tmptext = text
+     mat[pos[0]+1,pos[1]] = ord(tmptext[0]) / 256 
+     if len(tmptext) > 0:
+        return tmptext[1:],[pos[0]+1,pos[1]]
+     else:
+         return None,[pos[0]+1,pos[1]]
+     
+def down(mat,pos,text):
+     if len(text) == 0:
+         return "",[pos[0],pos[1]-1]
+     
+     if not in_bounds(pos,mat):
+         return text,pos
+     tmptext = text
+     mat[pos[0],pos[1]-1] = ord(tmptext[0])/ 256 
+     if len(tmptext) > 0:
+        return tmptext[1:],[pos[0],pos[1]-1]
+     else:
+         return None,[pos[0],pos[1]-1]
+
+
+def up(mat,pos,text):
+     if len(text) == 0:
+         return "",[pos[0],pos[1]+1]
+    
+     if not in_bounds(pos,mat):
+         return text,pos
+     tmptext = text
+     mat[pos[0],pos[1]+1] = ord(tmptext[0])/ 256 
+     if len(tmptext) > 0:
+        return tmptext[1:],[pos[0],pos[1]+1]
+     else:
+         return None,[pos[0],pos[1]+1]
+
+def left(mat,pos,text):
+     if len(text) == 0:
+         return "",[pos[0]-1,pos[1]]
+     
+     if not in_bounds(pos,mat):
+         return text,pos
+     
+     tmptext = text
+     mat[pos[0]-1,pos[1]] = ord(tmptext[0]) / 256 
+     if len(tmptext) > 0:
+        return tmptext[1:],[pos[0]-1,pos[1]]
+     else:
+         return None,[pos[0]-1,pos[1]]
+     
+
+
+
+def hilbert_curve(level,text,mat,direction = 'u',pos=[0,0]):
+    r= tmptext= text
+    if level == 0:
+        if direction == 'l':
+            r,pos1 = right(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+           
+    
+            
+            r,pos1 = down(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            
+            r,pos1 = left(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            
+        elif direction == 'r':
+            r,pos1 = left(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            
+            r,pos1 = up(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            
+            r,pos1 = right(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            
+
+        elif direction == 'd':
+
+            r,pos = up(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            
+            r,pos = right(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            
+            r,pos = down(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            
+    
+        elif direction == 'u':
+
+            r,pos = up(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            
+            r,pos = left(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            
+            r,pos = down(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+        
+        plt.imshow(mat)
+        plt.show()
+        return mat,level ,r,pos
+            
+  ####################
+    else:
+        if direction == 'l':
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'u',pos=pos)
+            r,pos = right(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            
+            
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'l',pos=pos)
+            r,pos = down(mat,pos,r)
+            if r is None:
+                return mat,level1,r,pos
+            
+
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'l',pos=pos)
+            r,pos = left(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'd',pos=pos)
+
+        elif direction == 'r':
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'd',pos=pos)
+            r,pos = left(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'r',pos=pos)
+            r,pos = up(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'r',pos=pos)    
+            r,pos = right(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'u',pos=pos)  
+
+
+        elif direction == 'd':
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'r',pos=pos)
+            r,pos = up(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'd',pos=pos)
+            r,pos = right(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'd',pos=pos)
+            r,pos = down(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'l',pos=pos)
+    
+
+        elif direction == 'u':
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'l',pos=pos)
+            r,pos = up(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'u',pos=pos)
+            r,pos = left(mat,pos,r)
+            if r is None:
+                return mat,level,r,pos
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'u',pos=pos)
+            r,pos = down(mat,pos,r)
+            if r is None:
+                return mat,level1,r,pos
+            
+            mat,level1,r,pos = hilbert_curve(level -1,r,mat,direction = 'l',pos=pos)
+
+        return mat,level1,tmptext,pos
+    
+
+m2,l,tmptxt,pos = hilbert_curve(bits,text,mat,'u',pos=[mat.shape[0]//2,mat.shape[0]//2])
+plt.imshow(m2)
+plt.show()
